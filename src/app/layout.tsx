@@ -5,6 +5,7 @@ import WalletProvider from "@/components/WalletProvider";
 import Header from "@/components/Header";
 import PriceTicker from "@/components/PriceTicker";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import InstallPrompt from "@/components/InstallPrompt";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <WalletProvider>
           <ServiceWorkerRegistrar />
+          <InstallPrompt />
           <Header />
           <PriceTicker />
           <main>{children}</main>

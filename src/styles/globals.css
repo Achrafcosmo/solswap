@@ -72,3 +72,15 @@
   border: 1px solid rgba(26, 26, 26, 0.8) !important;
   border-radius: 16px !important;
 }
+
+/* Install prompt animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+.animate-slideUp { animation: slideUp 0.3s ease-out; }
