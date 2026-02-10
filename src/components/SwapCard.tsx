@@ -315,7 +315,24 @@ export default function SwapCard() {
             {/* Swap Button */}
             <div className="mt-5">
               {!connected ? (
-                <WalletMultiButton className="!w-full !justify-center !rounded-2xl !py-4 !text-base !h-auto" />
+                <button
+                  onClick={() => {
+                    // Trigger wallet modal
+                    const btn = document.querySelector(".wallet-adapter-button") as HTMLButtonElement;
+                    if (btn) btn.click();
+                  }}
+                  className="w-full py-4 rounded-2xl font-bold text-base btn-gradient text-black group relative overflow-hidden"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2.5">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 7V4a1 1 0 00-1-1H5a2 2 0 00-2 2v14a2 2 0 002 2h13a1 1 0 001-1v-3" />
+                      <path d="M16 7h3a2 2 0 012 2v6a2 2 0 01-2 2h-3" />
+                      <circle cx="16" cy="12" r="1" />
+                    </svg>
+                    Connect Wallet
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-purple/0 via-white/10 to-brand-purple/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                </button>
               ) : (
                 <button
                   onClick={handleSwap}
