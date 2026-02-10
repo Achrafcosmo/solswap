@@ -3,17 +3,24 @@ import React from "react";
 import { useSwapStore } from "@/hooks/useSwapStore";
 
 export default function QuotesPanel() {
-  const { quotes, selectedQuoteIndex, selectQuote, outputToken, loading } = useSwapStore();
+  const { quotes, selectedQuoteIndex, selectQuote, outputToken, loading, quotesLoading } = useSwapStore();
 
-  if (loading || quotes.length === 0) return null;
+  if (loading && quotes.length === 0) return null;
+  if (!loading && quotes.length === 0) return null;
 
   return (
     <div className="w-full max-w-[480px] mx-auto mt-3">
       <div className="bg-brand-card border border-brand-border rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-white">Quotes</h3>
-          <span className="text-xs text-brand-muted">
+          <span className="text-xs text-brand-muted flex items-center gap-1.5">
             {quotes.length} source{quotes.length !== 1 ? "s" : ""}
+            {quotesLoading && (
+              <span className="flex items-center gap-0.5">
+                <span className="w-1 h-1 rounded-full bg-brand-gold animate-pulse" />
+                <span className="w-1 h-1 rounded-full bg-brand-gold animate-pulse" style={{ animationDelay: "0.2s" }} />
+              </span>
+            )}
           </span>
         </div>
 

@@ -39,7 +39,7 @@ export default function SwapCard() {
   useEffect(() => {
     if (!store.inputAmount || parseFloat(store.inputAmount) <= 0) return;
     const taker = publicKey?.toBase58();
-    const timer = setTimeout(() => store.fetchOrder(taker), 500);
+    const timer = setTimeout(() => store.fetchOrder(taker), 300);
     return () => clearTimeout(timer);
   }, [store.inputAmount, store.inputToken.address, store.outputToken.address, publicKey]);
 
