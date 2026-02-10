@@ -35,7 +35,7 @@ export default function HistoryTable() {
     setError(null);
 
     try {
-      const history = await getSwapHistory(publicKey.toBase58(), 30);
+      const history = await getSwapHistory(publicKey.toBase58(), 20);
 
       // Enrich with token metadata
       const enriched: EnrichedSwap[] = await Promise.all(
@@ -66,6 +66,7 @@ export default function HistoryTable() {
 
       setSwaps(enriched);
     } catch (e: any) {
+      console.error("History fetch error:", e);
       setError(e.message || "Failed to load history");
     } finally {
       setLoading(false);
