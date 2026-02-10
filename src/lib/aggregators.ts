@@ -86,6 +86,42 @@ export async function fetchRaydiumQuote(
   }
 }
 
+export async function fetchOkxQuote(
+  inputMint: string,
+  outputMint: string,
+  amount: string
+): Promise<AggregatorQuote | null> {
+  try {
+    const params = new URLSearchParams({
+      fromTokenAddress: inputMint,
+      toTokenAddress: outputMint,
+      amount,
+    });
+
+    const res = await fetch(`/api/okx-quote?${params}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.code !== "0" || !data.data?.[0]) return null;
+
+    const quote = data.data[0];
+    const dexNames = quote.dexRouterList
+      ?.map((r: any) => r.dexProtocol?.dexName)
+      .filter(Boolean)
+      .join(" → ") || "OKX Router";
+
+    return {
+      name: "OKX",
+      outputAmount: quote.toTokenAmount || "0",
+      outputUsd: 0,
+      routeLabel: dexNames,
+      isBest: false,
+      savings: 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchAllQuotes(
   inputMint: string,
   outputMint: string,
@@ -97,6 +133,7 @@ export async function fetchAllQuotes(
   const results = await Promise.allSettled([
     fetchJupiterQuote(inputMint, outputMint, amount, taker),
     fetchRaydiumQuote(inputMint, outputMint, amount),
+    fetchOkxQuote(inputMint, outputMint, amount),
   ]);
 
   const quotes: AggregatorQuote[] = [];
@@ -108,6 +145,10 @@ export async function fetchAllQuotes(
 
   if (results[1].status === "fulfilled" && results[1].value) {
     quotes.push(results[1].value);
+  }
+
+  if (results[2].status === "fulfilled" && results[2].value) {
+    quotes.push(results[2].value);
   }
 
   if (quotes.length === 0) return [];
