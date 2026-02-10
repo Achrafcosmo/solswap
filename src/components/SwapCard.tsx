@@ -8,6 +8,9 @@ import { executeOrder } from "@/lib/jupiter";
 import { formatPriceImpact } from "@/lib/format";
 import TokenSelector from "./TokenSelector";
 import { saveSwap } from "@/lib/swapHistory";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
+
+const SOL_MINT = "So11111111111111111111111111111111111111112";
 
 export default function SwapCard() {
   const { publicKey, signTransaction, connected } = useWallet();
@@ -18,6 +21,26 @@ export default function SwapCard() {
   const [txResult, setTxResult] = useState<{ txid: string } | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const { balance: inputBalance } = useTokenBalance(store.inputToken.address);
+  const { balance: outputBalance } = useTokenBalance(store.outputToken.address);
+
+  // For SOL, reserve 0.01 for fees
+  const maxInput = inputBalance !== null
+    ? (store.inputToken.address === SOL_MINT ? Math.max(0, inputBalance - 0.01) : inputBalance)
+    : null;
+
+  const handleHalf = () => {
+    if (maxInput !== null) {
+      const half = maxInput / 2;
+      store.setInputAmount(half > 0 ? half.toString() : "0");
+    }
+  };
+
+  const handleMax = () => {
+    if (maxInput !== null) {
+      store.setInputAmount(maxInput > 0 ? maxInput.toString() : "0");
+    }
+  };
 
   // Debounced order fetch
   useEffect(() => {
@@ -127,6 +150,25 @@ export default function SwapCard() {
             <div className="token-input-card rounded-2xl p-4 mb-1.5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">You pay</span>
+                {connected && inputBalance !== null && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-gray-500">
+                      Balance: {inputBalance < 0.001 ? inputBalance.toExponential(2) : inputBalance.toFixed(inputBalance < 1 ? 4 : 2)}
+                    </span>
+                    <button
+                      onClick={handleHalf}
+                      className="text-[10px] font-bold text-brand-accent/70 hover:text-brand-accent bg-brand-accent/[0.08] hover:bg-brand-accent/[0.15] px-1.5 py-0.5 rounded-md transition-all"
+                    >
+                      HALF
+                    </button>
+                    <button
+                      onClick={handleMax}
+                      className="text-[10px] font-bold text-brand-accent/70 hover:text-brand-accent bg-brand-accent/[0.08] hover:bg-brand-accent/[0.15] px-1.5 py-0.5 rounded-md transition-all"
+                    >
+                      MAX
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <input
@@ -172,6 +214,11 @@ export default function SwapCard() {
             <div className="token-input-card rounded-2xl p-4 mt-1.5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">You receive</span>
+                {connected && outputBalance !== null && (
+                  <span className="text-xs text-gray-500">
+                    Balance: {outputBalance < 0.001 ? outputBalance.toExponential(2) : outputBalance.toFixed(outputBalance < 1 ? 4 : 2)}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex-1 text-3xl font-bold min-w-0">
