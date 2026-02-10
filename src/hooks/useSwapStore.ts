@@ -174,7 +174,18 @@ export const useSwapStore = create<SwapStore>((set, get) => ({
         });
       }
 
-      set({ quotes: ranked, quotesLoading: false, selectedQuoteIndex: 0 });
+      // Update output to show best price
+      const best = ranked[0];
+      const bestOutNum = (
+        Number(best.outputAmount) / Math.pow(10, outputToken.decimals)
+      ).toFixed(outputToken.decimals > 4 ? 6 : outputToken.decimals);
+
+      set({
+        quotes: ranked,
+        quotesLoading: false,
+        selectedQuoteIndex: 0,
+        outputAmount: bestOutNum,
+      });
     } catch {
       set({ quotesLoading: false });
     }

@@ -205,7 +205,14 @@ export default function SwapCard() {
                 {/* Buy panel */}
                 <div className="token-input-card rounded-xl p-4 mt-1.5">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-medium text-brand-muted">Buy</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-brand-muted">Buy</span>
+                      {store.quotes.length > 0 && store.quotes[0]?.isBest && (
+                        <span className="text-[10px] font-semibold text-brand-green bg-brand-green/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          Best via {store.quotes[0].name}
+                        </span>
+                      )}
+                    </div>
                     {connected && outputBalance !== null && (
                       <span className="text-xs text-brand-muted">
                         Balance: {outputBalance < 0.001 ? outputBalance.toExponential(2) : outputBalance.toFixed(outputBalance < 1 ? 4 : 2)}
