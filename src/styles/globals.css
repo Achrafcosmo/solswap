@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #0a0e1a;
+  --color-brand-darker: #060912;
+  --color-brand-card: #111827;
+  --color-brand-border: #1f2937;
+  --color-brand-accent: #14f195;
+  --color-brand-purple: #9945ff;
+}
+
+body {
+  background: #060912;
+  color: #e5e7eb;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0e1a; }
+::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+
+.wallet-adapter-button {
+  background: linear-gradient(135deg, #9945ff, #14f195) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+}
