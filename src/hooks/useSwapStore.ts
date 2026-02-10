@@ -1,7 +1,7 @@
 "use client";
 import { create } from "zustand";
-import { Token, QuoteResponse } from "@/types/token";
-import { POPULAR_TOKENS, getQuote } from "@/lib/jupiter";
+import { Token, } from "@/types/token";
+import { POPULAR_TOKENS, getOrder, OrderResponse } from "@/lib/jupiter";
 import { toSmallestUnit } from "@/lib/format";
 
 interface SwapStore {
@@ -10,7 +10,7 @@ interface SwapStore {
   inputAmount: string;
   outputAmount: string;
   slippageBps: number;
-  quote: QuoteResponse | null;
+  order: OrderResponse | null;
   loading: boolean;
   error: string | null;
 
@@ -19,7 +19,7 @@ interface SwapStore {
   setInputAmount: (amount: string) => void;
   setSlippage: (bps: number) => void;
   switchTokens: () => void;
-  fetchQuote: () => Promise<void>;
+  fetchOrder: (taker?: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -29,54 +29,52 @@ export const useSwapStore = create<SwapStore>((set, get) => ({
   inputAmount: "",
   outputAmount: "",
   slippageBps: 50,
-  quote: null,
+  order: null,
   loading: false,
   error: null,
 
   setInputToken: (token) => {
-    set({ inputToken: token, quote: null, outputAmount: "" });
-    if (get().inputAmount) get().fetchQuote();
+    set({ inputToken: token, order: null, outputAmount: "" });
   },
 
   setOutputToken: (token) => {
-    set({ outputToken: token, quote: null, outputAmount: "" });
-    if (get().inputAmount) get().fetchQuote();
+    set({ outputToken: token, order: null, outputAmount: "" });
   },
 
   setInputAmount: (amount) => {
-    set({ inputAmount: amount, outputAmount: "", quote: null });
+    set({ inputAmount: amount, outputAmount: "", order: null });
   },
 
   setSlippage: (bps) => set({ slippageBps: bps }),
 
   switchTokens: () => {
-    const { inputToken, outputToken, inputAmount } = get();
+    const { inputToken, outputToken } = get();
     set({
       inputToken: outputToken,
       outputToken: inputToken,
       inputAmount: "",
       outputAmount: "",
-      quote: null,
+      order: null,
     });
   },
 
-  fetchQuote: async () => {
-    const { inputToken, outputToken, inputAmount, slippageBps } = get();
+  fetchOrder: async (taker?: string) => {
+    const { inputToken, outputToken, inputAmount } = get();
     if (!inputAmount || parseFloat(inputAmount) <= 0) return;
 
     set({ loading: true, error: null });
     try {
       const lamports = toSmallestUnit(inputAmount, inputToken.decimals);
-      const quote = await getQuote(
+      const order = await getOrder(
         inputToken.address,
         outputToken.address,
         lamports,
-        slippageBps
+        taker
       );
       const outNum = (
-        Number(quote.outAmount) / Math.pow(10, outputToken.decimals)
+        Number(order.outAmount) / Math.pow(10, outputToken.decimals)
       ).toFixed(outputToken.decimals > 4 ? 6 : outputToken.decimals);
-      set({ quote, outputAmount: outNum, loading: false });
+      set({ order, outputAmount: outNum, loading: false });
     } catch (e: any) {
       set({ error: e.message || "Failed to get quote", loading: false });
     }

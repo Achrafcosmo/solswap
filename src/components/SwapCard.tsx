@@ -4,7 +4,7 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { VersionedTransaction } from "@solana/web3.js";
 import { useSwapStore } from "@/hooks/useSwapStore";
-import { getSwapTransaction } from "@/lib/jupiter";
+import { executeOrder } from "@/lib/jupiter";
 import { formatPriceImpact } from "@/lib/format";
 import TokenSelector from "./TokenSelector";
 
@@ -18,35 +18,42 @@ export default function SwapCard() {
   const [swapError, setSwapError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Debounced quote fetch
+  // Debounced order fetch
   useEffect(() => {
     if (!store.inputAmount || parseFloat(store.inputAmount) <= 0) return;
-    const timer = setTimeout(() => store.fetchQuote(), 500);
+    const taker = publicKey?.toBase58();
+    const timer = setTimeout(() => store.fetchOrder(taker), 500);
     return () => clearTimeout(timer);
-  }, [store.inputAmount, store.inputToken.address, store.outputToken.address]);
+  }, [store.inputAmount, store.inputToken.address, store.outputToken.address, publicKey]);
 
   const handleSwap = useCallback(async () => {
-    if (!publicKey || !signTransaction || !store.quote) return;
+    if (!publicKey || !signTransaction || !store.order?.transaction) return;
+
     setSwapping(true);
     setSwapError(null);
     setTxResult(null);
+
     try {
-      const swapTxBase64 = await getSwapTransaction(store.quote, publicKey.toBase58());
-      const swapTxBuf = Buffer.from(swapTxBase64, "base64");
-      const tx = VersionedTransaction.deserialize(swapTxBuf);
+      // Deserialize and sign
+      const txBuf = Buffer.from(store.order.transaction, "base64");
+      const tx = VersionedTransaction.deserialize(txBuf);
       const signed = await signTransaction(tx);
-      const txid = await connection.sendRawTransaction(signed.serialize(), {
-        skipPreflight: true,
-        maxRetries: 2,
-      });
-      await connection.confirmTransaction(txid, "confirmed");
-      setTxResult({ txid });
+      const signedBase64 = Buffer.from(signed.serialize()).toString("base64");
+
+      // Execute via Jupiter Ultra
+      const result = await executeOrder(signedBase64, store.order.requestId);
+
+      if (result.status === "Success" || result.signature) {
+        setTxResult({ txid: result.signature || "" });
+      } else {
+        throw new Error(result.error || "Swap failed");
+      }
     } catch (e: any) {
       setSwapError(e.message || "Swap failed");
     } finally {
       setSwapping(false);
     }
-  }, [publicKey, signTransaction, store.quote, connection]);
+  }, [publicKey, signTransaction, store.order, connection]);
 
   const slippageOptions = [
     { label: "0.1%", value: 10 },
@@ -54,6 +61,10 @@ export default function SwapCard() {
     { label: "1%", value: 100 },
     { label: "3%", value: 300 },
   ];
+
+  const priceImpact = store.order?.priceImpactPct
+    ? parseFloat(store.order.priceImpactPct)
+    : 0;
 
   return (
     <>
@@ -177,33 +188,37 @@ export default function SwapCard() {
             </div>
 
             {/* Quote Details */}
-            {store.quote && (
+            {store.order && (
               <div className="mt-4 p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.04] space-y-2.5">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Price Impact</span>
-                  <span className={`text-xs font-semibold ${
-                    store.quote.priceImpactPct > 1 ? "text-red-400" :
-                    store.quote.priceImpactPct > 0.5 ? "text-yellow-400" : "text-brand-accent"
-                  }`}>
-                    {formatPriceImpact(store.quote.priceImpactPct)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Route</span>
-                  <div className="flex items-center gap-1.5">
-                    {store.quote.routePlan.map((r, i) => (
-                      <React.Fragment key={i}>
-                        {i > 0 && <span className="text-gray-600 text-xs">→</span>}
-                        <span className="text-xs font-medium text-gray-300 bg-white/[0.04] px-2 py-0.5 rounded-md">
-                          {r.swapInfo.label}
-                        </span>
-                      </React.Fragment>
-                    ))}
+                {priceImpact > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">Price Impact</span>
+                    <span className={`text-xs font-semibold ${
+                      priceImpact > 1 ? "text-red-400" :
+                      priceImpact > 0.5 ? "text-yellow-400" : "text-brand-accent"
+                    }`}>
+                      {formatPriceImpact(priceImpact)}
+                    </span>
                   </div>
-                </div>
+                )}
+                {store.order.routePlan && store.order.routePlan.length > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">Route</span>
+                    <div className="flex items-center gap-1.5">
+                      {store.order.routePlan.map((r, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <span className="text-gray-600 text-xs">→</span>}
+                          <span className="text-xs font-medium text-gray-300 bg-white/[0.04] px-2 py-0.5 rounded-md">
+                            {r.swapInfo.label}
+                          </span>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Slippage</span>
-                  <span className="text-xs text-gray-300">{store.slippageBps / 100}%</span>
+                  <span className="text-xs text-gray-500">Swap Type</span>
+                  <span className="text-xs text-gray-300">{store.order.swapType}</span>
                 </div>
               </div>
             )}
@@ -226,9 +241,11 @@ export default function SwapCard() {
                 </svg>
                 <span className="text-brand-accent text-xs">
                   Swap successful!{" "}
-                  <a href={`https://solscan.io/tx/${txResult.txid}`} target="_blank" rel="noopener noreferrer" className="underline font-semibold">
-                    View on Solscan →
-                  </a>
+                  {txResult.txid && (
+                    <a href={`https://solscan.io/tx/${txResult.txid}`} target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+                      View on Solscan →
+                    </a>
+                  )}
                 </span>
               </div>
             )}
@@ -240,7 +257,7 @@ export default function SwapCard() {
               ) : (
                 <button
                   onClick={handleSwap}
-                  disabled={!store.quote || swapping || store.loading}
+                  disabled={!store.order?.transaction || swapping || store.loading}
                   className="w-full py-4 rounded-2xl font-bold text-base btn-gradient text-black"
                 >
                   {swapping ? (
@@ -255,8 +272,10 @@ export default function SwapCard() {
                     "Fetching best price..."
                   ) : !store.inputAmount ? (
                     "Enter an amount"
-                  ) : !store.quote ? (
+                  ) : !store.order ? (
                     "Get quote"
+                  ) : !store.order.transaction ? (
+                    "Connect wallet to swap"
                   ) : (
                     "Swap"
                   )}
@@ -271,7 +290,7 @@ export default function SwapCard() {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
-          Powered by Jupiter • Solana
+          Powered by Jupiter Ultra • Solana
         </div>
       </div>
 
