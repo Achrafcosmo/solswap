@@ -46,19 +46,18 @@ export default function SwapCard() {
 
       if (result.status === "Success" || result.signature) {
         setTxResult({ txid: result.signature || "" });
-        // Save to local history
+        // Save to database
         saveSwap({
-          signature: result.signature || "",
-          timestamp: Math.floor(Date.now() / 1000),
-          inputMint: store.inputToken.address,
-          inputSymbol: store.inputToken.symbol,
-          inputAmount: store.inputAmount,
-          inputLogoURI: store.inputToken.logoURI,
-          outputMint: store.outputToken.address,
-          outputSymbol: store.outputToken.symbol,
-          outputAmount: store.outputAmount,
-          outputLogoURI: store.outputToken.logoURI,
           wallet: publicKey.toBase58(),
+          signature: result.signature || "",
+          input_mint: store.inputToken.address,
+          input_symbol: store.inputToken.symbol,
+          input_amount: store.inputAmount,
+          input_logo: store.inputToken.logoURI,
+          output_mint: store.outputToken.address,
+          output_symbol: store.outputToken.symbol,
+          output_amount: store.outputAmount,
+          output_logo: store.outputToken.logoURI,
           status: "success",
         });
       } else {

@@ -1,42 +1,58 @@
-export interface LocalSwap {
-  signature: string;
-  timestamp: number;
-  inputMint: string;
-  inputSymbol: string;
-  inputAmount: string;
-  inputLogoURI?: string;
-  outputMint: string;
-  outputSymbol: string;
-  outputAmount: string;
-  outputLogoURI?: string;
+const SUPABASE_URL = "https://xfrzkferqgzbflwhrqtf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_XJG3alvet0u3GS07N_gfdg_zwxBTMmJ";
+
+const headers = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`,
+  "Content-Type": "application/json",
+};
+
+export interface SwapRecord {
+  id?: number;
   wallet: string;
-  status: "success" | "failed";
+  signature: string;
+  input_mint: string;
+  input_symbol: string;
+  input_amount: string;
+  input_logo?: string;
+  output_mint: string;
+  output_symbol: string;
+  output_amount: string;
+  output_logo?: string;
+  status: string;
+  created_at?: string;
 }
 
-const STORAGE_KEY = "solswap_history";
-
-export function saveSwap(swap: LocalSwap): void {
-  const history = getSwaps(swap.wallet);
-  history.unshift(swap);
-  // Keep max 100
-  if (history.length > 100) history.pop();
+export async function saveSwap(swap: Omit<SwapRecord, "id" | "created_at">): Promise<void> {
   try {
-    localStorage.setItem(`${STORAGE_KEY}_${swap.wallet}`, JSON.stringify(history));
-  } catch {}
+    await fetch(`${SUPABASE_URL}/rest/v1/swap_history`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(swap),
+    });
+  } catch (e) {
+    console.error("Failed to save swap:", e);
+  }
 }
 
-export function getSwaps(wallet: string): LocalSwap[] {
+export async function getSwaps(wallet: string): Promise<SwapRecord[]> {
   try {
-    const raw = localStorage.getItem(`${STORAGE_KEY}_${wallet}`);
-    if (!raw) return [];
-    return JSON.parse(raw);
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/swap_history?wallet=eq.${wallet}&order=created_at.desc&limit=50`,
+      { headers }
+    );
+    if (!res.ok) return [];
+    return res.json();
   } catch {
     return [];
   }
 }
 
-export function clearSwaps(wallet: string): void {
+export async function clearSwaps(wallet: string): Promise<void> {
   try {
-    localStorage.removeItem(`${STORAGE_KEY}_${wallet}`);
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/swap_history?wallet=eq.${wallet}`,
+      { method: "DELETE", headers }
+    );
   } catch {}
 }
