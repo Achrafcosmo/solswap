@@ -28,9 +28,9 @@ export default function Home() {
         {/* Stats */}
         <div className="mt-16 grid grid-cols-3 gap-8 max-w-md w-full">
           {[
-            { label: "DEXes", value: "15+" },
+            { label: "DEXes", value: "20+" },
             { label: "Tokens", value: "10K+" },
-            { label: "Fees", value: "$0" },
+            { label: "Platform Fee", value: "0%" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-2xl font-bold gradient-text">{stat.value}</div>
