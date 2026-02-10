@@ -1,19 +1,10 @@
-@import "tailwindcss";
-@source "../**/*.{ts,tsx}";
-
-@theme {
-  --color-brand-dark: #0a0e1a;
-  --color-brand-darker: #060912;
-  --color-brand-card: #111827;
-  --color-brand-border: #1f2937;
-  --color-brand-accent: #14f195;
-  --color-brand-purple: #9945ff;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   body {
-    background: #060912;
-    color: #e5e7eb;
+    @apply bg-brand-darker text-gray-200;
   }
 }
 
@@ -30,15 +21,11 @@
   }
 
   .glass {
-    background: rgba(17, 24, 39, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    @apply bg-brand-card/70 backdrop-blur-xl;
   }
 
   .glass-strong {
-    background: rgba(17, 24, 39, 0.85);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    @apply bg-brand-card/85 backdrop-blur-2xl;
   }
 
   .glow-accent {
@@ -46,81 +33,47 @@
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #9945ff 0%, #14f195 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    @apply bg-gradient-to-r from-brand-purple to-brand-accent bg-clip-text text-transparent;
   }
 
   .btn-gradient {
-    background: linear-gradient(135deg, #9945ff 0%, #14f195 100%);
-    transition: all 0.3s ease;
+    @apply bg-gradient-to-r from-brand-purple to-brand-accent transition-all duration-300;
   }
   .btn-gradient:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    @apply opacity-90 -translate-y-0.5;
     box-shadow: 0 8px 30px rgba(20, 241, 149, 0.2), 0 4px 15px rgba(153, 69, 255, 0.15);
   }
   .btn-gradient:disabled {
-    opacity: 0.4;
-    transform: none;
-    box-shadow: none;
-    cursor: not-allowed;
+    @apply opacity-40 translate-y-0 shadow-none cursor-not-allowed;
   }
 
   .token-input-card {
-    background: rgba(6, 9, 18, 0.6);
-    border: 1px solid rgba(31, 41, 55, 0.5);
-    transition: all 0.2s ease;
+    @apply bg-brand-darker/60 border border-brand-border/50 transition-all duration-200;
   }
   .token-input-card:focus-within {
-    border-color: rgba(20, 241, 149, 0.3);
+    @apply border-brand-accent/30;
     box-shadow: 0 0 20px rgba(20, 241, 149, 0.05);
   }
 
   .token-select-btn {
-    background: rgba(31, 41, 55, 0.5);
-    border: 1px solid rgba(31, 41, 55, 0.8);
-    transition: all 0.2s ease;
+    @apply bg-brand-border/50 border border-brand-border/80 transition-all duration-200;
   }
   .token-select-btn:hover {
-    background: rgba(31, 41, 55, 0.8);
-    border-color: rgba(20, 241, 149, 0.3);
+    @apply bg-brand-border/80 border-brand-accent/30;
   }
 
   .switch-btn {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    @apply transition-all duration-300 ease-in-out;
   }
   .switch-btn:hover {
-    transform: rotate(180deg);
-    border-color: rgba(20, 241, 149, 0.5);
-    background: rgba(20, 241, 149, 0.1);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-@keyframes float-card {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-@layer utilities {
-  .animate-pulse-glow {
-    animation: pulse-glow 1.5s ease-in-out infinite;
-  }
-  .animate-float {
-    animation: float-card 6s ease-in-out infinite;
+    @apply rotate-180 border-brand-accent/50 bg-brand-accent/10;
   }
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 2px; }
+::-webkit-scrollbar-thumb { @apply bg-brand-border rounded-sm; }
 
 /* Wallet adapter overrides */
 .wallet-adapter-button {
