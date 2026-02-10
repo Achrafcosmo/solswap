@@ -1,28 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const EXPO_URL = 'https://expo.dev/accounts/cosmobuild/projects/solswap-mobile/updates/4db35164-3944-4129-9d17-b11886b40ccc';
 
 export default function MobilePage() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    // Generate QR code on canvas using minimal implementation
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js';
-    script.onload = () => {
-      if (canvasRef.current && (window as any).QRCode) {
-        (window as any).QRCode.toCanvas(canvasRef.current, EXPO_URL, {
-          width: 280,
-          margin: 2,
-          color: { dark: '#000000', light: '#ffffff' },
-        });
-      }
-    };
-    document.head.appendChild(script);
-  }, []);
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -56,7 +38,7 @@ export default function MobilePage() {
           marginBottom: 32,
           boxShadow: '0 0 40px rgba(240,185,11,0.15)',
         }}>
-          <canvas ref={canvasRef} style={{ display: 'block' }} />
+          <QRCodeSVG value={EXPO_URL} size={280} level="M" />
         </div>
 
         <div style={{
