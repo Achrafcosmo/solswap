@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
@@ -8,40 +8,56 @@ import { shortenAddress } from "@/lib/format";
 
 const NAV_ITEMS = [
   { label: "Swap", href: "/" },
-  { label: "History", href: "/history" },
+  { label: "Profile", href: "/profile" },
+  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Forge", href: "/forge" },
 ];
 
 export default function Header() {
   const { publicKey } = useWallet();
   const pathname = usePathname();
+  const [solPrice, setSolPrice] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const res = await fetch(
+          "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd"
+        );
+        const data = await res.json();
+        setSolPrice(data.solana?.usd ?? null);
+      } catch {}
+    };
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <header className="w-full glass-strong sticky top-0 z-40 border-b border-white/5">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <header className="w-full bg-brand-dark/95 backdrop-blur-xl sticky top-0 z-40 border-b border-brand-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
-            </svg>
-          </div>
-          <span className="text-xl font-bold gradient-text tracking-tight">
-            SolSwap
+        <Link href="/" className="flex items-center gap-1 shrink-0">
+          <span className="text-xl font-extrabold text-white tracking-tight">
+            SOL<span className="text-brand-gold">SWAP</span>
+          </span>
+          <span className="text-sm text-brand-muted font-light ml-1 hidden sm:inline">
+            Exchange
           </span>
         </Link>
 
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1 ml-8">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   active
-                    ? "text-white bg-white/5"
-                    : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.02]"
+                    ? "text-brand-gold bg-brand-gold/10"
+                    : "text-brand-muted hover:text-white hover:bg-white/5"
                 }`}
               >
                 {item.label}
@@ -50,14 +66,28 @@ export default function Header() {
           })}
         </nav>
 
-        {/* Wallet */}
+        {/* Right side */}
         <div className="flex items-center gap-3">
+          {solPrice !== null && (
+            <div className="hidden sm:flex items-center gap-2 text-sm">
+              <img
+                src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                alt="SOL"
+                className="w-5 h-5 rounded-full"
+              />
+              <span className="text-white font-semibold">
+                ${solPrice.toFixed(2)}
+              </span>
+            </div>
+          )}
+
           {publicKey && (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 text-xs text-gray-400">
-              <div className="w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-border/50 text-xs text-brand-muted">
+              <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
               {shortenAddress(publicKey.toBase58())}
             </div>
           )}
+
           <WalletMultiButton />
         </div>
       </div>

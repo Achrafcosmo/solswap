@@ -6,26 +6,30 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          dark: "#0a0e1a",
-          darker: "#060912",
-          card: "#111827",
-          border: "#1f2937",
-          accent: "#14f195",
-          purple: "#9945ff",
+          dark: "#0A0A0A",
+          darker: "#050505",
+          card: "#111111",
+          border: "#1a1a1a",
+          accent: "#F0B90B",
+          green: "#0ECB81",
+          red: "#F6465D",
+          gold: "#F0B90B",
+          "gold-dark": "#C99A08",
+          muted: "#848E9C",
         },
       },
       animation: {
         "pulse-glow": "pulse-glow 1.5s ease-in-out infinite",
-        "float": "float-card 6s ease-in-out infinite",
+        "ticker-scroll": "ticker-scroll 30s linear infinite",
       },
       keyframes: {
         "pulse-glow": {
           "0%, 100%": { opacity: "0.4" },
           "50%": { opacity: "1" },
         },
-        "float-card": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-6px)" },
+        "ticker-scroll": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
     },

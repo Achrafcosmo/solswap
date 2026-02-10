@@ -9,64 +9,41 @@
 }
 
 @layer components {
-  .bg-mesh {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(153, 69, 255, 0.15), transparent),
-      radial-gradient(ellipse 60% 40% at 80% 60%, rgba(20, 241, 149, 0.08), transparent),
-      radial-gradient(ellipse 50% 50% at 20% 80%, rgba(153, 69, 255, 0.06), transparent);
-    pointer-events: none;
-  }
-
   .glass {
-    @apply bg-brand-card/70 backdrop-blur-xl;
+    @apply bg-brand-card/80 backdrop-blur-xl;
   }
 
   .glass-strong {
-    @apply bg-brand-card/85 backdrop-blur-2xl;
+    @apply bg-brand-card/90 backdrop-blur-2xl;
   }
 
-  .glow-accent {
-    box-shadow: 0 0 40px rgba(20, 241, 149, 0.08), 0 0 80px rgba(20, 241, 149, 0.04);
+  .glow-gold {
+    box-shadow: 0 0 30px rgba(240, 185, 11, 0.08), 0 0 60px rgba(240, 185, 11, 0.04);
   }
 
-  .gradient-text {
-    @apply bg-gradient-to-r from-brand-purple to-brand-accent bg-clip-text text-transparent;
+  .btn-gold {
+    @apply bg-brand-gold text-black font-bold transition-all duration-200;
   }
-
-  .btn-gradient {
-    @apply bg-gradient-to-r from-brand-purple to-brand-accent transition-all duration-300;
+  .btn-gold:hover {
+    @apply bg-brand-gold-dark;
+    box-shadow: 0 4px 20px rgba(240, 185, 11, 0.3);
   }
-  .btn-gradient:hover {
-    @apply opacity-90 -translate-y-0.5;
-    box-shadow: 0 8px 30px rgba(20, 241, 149, 0.2), 0 4px 15px rgba(153, 69, 255, 0.15);
-  }
-  .btn-gradient:disabled {
-    @apply opacity-40 translate-y-0 shadow-none cursor-not-allowed;
+  .btn-gold:disabled {
+    @apply opacity-40 cursor-not-allowed shadow-none;
   }
 
   .token-input-card {
-    @apply bg-brand-darker/60 border border-brand-border/50 transition-all duration-200;
+    @apply bg-brand-dark border border-brand-border transition-all duration-200;
   }
   .token-input-card:focus-within {
-    @apply border-brand-accent/30;
-    box-shadow: 0 0 20px rgba(20, 241, 149, 0.05);
+    @apply border-brand-gold/30;
   }
 
   .token-select-btn {
-    @apply bg-brand-border/50 border border-brand-border/80 transition-all duration-200;
+    @apply bg-brand-border/60 border border-brand-border transition-all duration-200;
   }
   .token-select-btn:hover {
-    @apply bg-brand-border/80 border-brand-accent/30;
-  }
-
-  .switch-btn {
-    @apply transition-all duration-300 ease-in-out;
-  }
-  .switch-btn:hover {
-    @apply rotate-180 border-brand-accent/50 bg-brand-accent/10;
+    @apply bg-brand-border border-brand-gold/30;
   }
 }
 
@@ -77,20 +54,21 @@
 
 /* Wallet adapter overrides */
 .wallet-adapter-button {
-  background: linear-gradient(135deg, #9945ff, #14f195) !important;
-  border-radius: 12px !important;
-  font-weight: 600 !important;
+  background: #F0B90B !important;
+  color: #000 !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
   font-size: 14px !important;
   height: 40px !important;
   padding: 0 20px !important;
 }
 .wallet-adapter-button:hover {
-  opacity: 0.9 !important;
-  box-shadow: 0 4px 20px rgba(20, 241, 149, 0.2) !important;
+  background: #C99A08 !important;
+  box-shadow: 0 4px 20px rgba(240, 185, 11, 0.3) !important;
 }
 .wallet-adapter-modal-wrapper {
-  background: rgba(17, 24, 39, 0.95) !important;
+  background: rgba(17, 17, 17, 0.95) !important;
   backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(31, 41, 55, 0.8) !important;
-  border-radius: 20px !important;
+  border: 1px solid rgba(26, 26, 26, 0.8) !important;
+  border-radius: 16px !important;
 }
