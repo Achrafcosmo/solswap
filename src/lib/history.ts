@@ -1,4 +1,4 @@
-import { Connection, PublicKey, ParsedTransactionWithMeta } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 const RPC_ENDPOINT = process.env.NEXT_PUBLIC_RPC_URL || "https://mainnet.helius-rpc.com/?api-key=925d8b57-8b95-42e6-9fc8-0ffa673c29e5";
 
@@ -17,9 +17,11 @@ export interface TokenTransfer {
   direction: "in" | "out";
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export async function getSwapHistory(
   walletAddress: string,
-  limit: number = 20
+  limit: number = 10
 ): Promise<SwapHistoryItem[]> {
   const connection = new Connection(RPC_ENDPOINT, "confirmed");
   const pubkey = new PublicKey(walletAddress);
@@ -27,25 +29,19 @@ export async function getSwapHistory(
   const signatures = await connection.getSignaturesForAddress(pubkey, { limit });
   if (!signatures.length) return [];
 
-  // Fetch in batches of 5 to avoid rate limits
   const history: SwapHistoryItem[] = [];
-  const batchSize = 5;
 
-  for (let i = 0; i < signatures.length; i += batchSize) {
-    const batch = signatures.slice(i, i + batchSize);
-    const txs = await connection.getParsedTransactions(
-      batch.map((s) => s.signature),
-      { maxSupportedTransactionVersion: 0 }
-    );
+  // Fetch ONE at a time with delay to avoid rate limits
+  for (const sig of signatures) {
+    try {
+      const tx = await connection.getParsedTransaction(sig.signature, {
+        maxSupportedTransactionVersion: 0,
+      });
 
-    for (let j = 0; j < txs.length; j++) {
-      const tx = txs[j];
-      const sig = batch[j];
       if (!tx || !tx.meta) continue;
 
       const transfers = extractTransfers(tx, walletAddress);
 
-      // Include if there are any token movements
       if (transfers.length > 0) {
         history.push({
           signature: sig.signature,
@@ -55,6 +51,13 @@ export async function getSwapHistory(
           transfers,
         });
       }
+
+      // Small delay between requests
+      await sleep(200);
+    } catch (e: any) {
+      // Skip failed fetches, continue with others
+      console.warn("Failed to fetch tx:", sig.signature, e.message);
+      await sleep(500);
     }
   }
 
@@ -62,17 +65,16 @@ export async function getSwapHistory(
 }
 
 function extractTransfers(
-  tx: ParsedTransactionWithMeta,
+  tx: any,
   walletAddress: string
 ): TokenTransfer[] {
   const transfers: TokenTransfer[] = [];
   const meta = tx.meta;
   if (!meta) return transfers;
 
-  // SOL balance change
   const accountKeys = tx.transaction.message.accountKeys;
   const walletIndex = accountKeys.findIndex(
-    (k) => k.pubkey.toBase58() === walletAddress
+    (k: any) => k.pubkey.toBase58() === walletAddress
   );
 
   if (walletIndex !== -1 && meta.preBalances && meta.postBalances) {
@@ -90,7 +92,6 @@ function extractTransfers(
     }
   }
 
-  // Token balance changes
   const preTokenBalances = meta.preTokenBalances || [];
   const postTokenBalances = meta.postTokenBalances || [];
 
