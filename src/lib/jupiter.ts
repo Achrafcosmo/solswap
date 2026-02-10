@@ -1,6 +1,7 @@
 import { Token } from "@/types/token";
 
 const JUPITER_API = "https://api.jup.ag";
+const API_KEY = process.env.NEXT_PUBLIC_JUP_API_KEY || "";
 const TOKEN_LIST_URL = "https://tokens.jup.ag/tokens?tags=verified";
 
 let tokenCache: Token[] | null = null;
@@ -85,7 +86,10 @@ export async function getOrder(
   });
   if (taker) params.set("taker", taker);
 
-  const res = await fetch(`${JUPITER_API}/ultra/v1/order?${params}`);
+  const headers: Record<string, string> = {};
+  if (API_KEY) headers["x-api-key"] = API_KEY;
+
+  const res = await fetch(`${JUPITER_API}/ultra/v1/order?${params}`, { headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || err.message || "Failed to get order");
@@ -97,9 +101,12 @@ export async function executeOrder(
   signedTransaction: string,
   requestId: string
 ): Promise<{ status: string; signature?: string; error?: string }> {
+  const execHeaders: Record<string, string> = { "Content-Type": "application/json" };
+  if (API_KEY) execHeaders["x-api-key"] = API_KEY;
+
   const res = await fetch(`${JUPITER_API}/ultra/v1/execute`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: execHeaders,
     body: JSON.stringify({
       signedTransaction,
       requestId,
