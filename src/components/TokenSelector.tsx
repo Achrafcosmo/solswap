@@ -39,7 +39,7 @@ export default function TokenSelector({ onSelect, onClose }: Props) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md glass-strong border border-white/[0.06] rounded-3xl p-6 shadow-2xl mx-4">
+      <div className="w-full max-w-md glass-strong border border-white/[0.06] rounded-3xl p-6 shadow-2xl mx-4 max-sm:mx-0 max-sm:rounded-none max-sm:h-full max-sm:max-w-none max-sm:border-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-white">Select Token</h3>

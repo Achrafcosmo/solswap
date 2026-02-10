@@ -17,6 +17,7 @@ export default function Header() {
   const { publicKey } = useWallet();
   const pathname = usePathname();
   const [solPrice, setSolPrice] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchPrice = async () => {
@@ -66,6 +67,17 @@ export default function Header() {
           })}
         </nav>
 
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-2 rounded-lg hover:bg-white/5 text-brand-muted hover:text-white transition-colors"
+          aria-label="Menu"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            {mobileMenuOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>}
+          </svg>
+        </button>
+
         {/* Right side */}
         <div className="flex items-center gap-3">
           {solPrice !== null && (
@@ -91,6 +103,29 @@ export default function Header() {
           <WalletMultiButton />
         </div>
       </div>
+
+      {/* Mobile nav dropdown */}
+      {mobileMenuOpen && (
+        <nav className="md:hidden border-t border-brand-border bg-brand-dark/95 backdrop-blur-xl px-4 py-3 flex flex-col gap-1">
+          {NAV_ITEMS.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors min-h-[44px] flex items-center ${
+                  active
+                    ? "text-brand-gold bg-brand-gold/10"
+                    : "text-brand-muted hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </header>
   );
 }
