@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-const EXPO_URL = 'exp://nre8glq-anonymous-8081.exp.direct';
+const EXPO_URL = 'https://expo.dev/accounts/cosmobuild/projects/solswap-mobile/updates/b145a3c3-cf1a-4a24-855a-14a654d5acb7';
 
 export default function MobilePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
