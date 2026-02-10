@@ -7,6 +7,7 @@ import { useSwapStore } from "@/hooks/useSwapStore";
 import { executeOrder } from "@/lib/jupiter";
 import { formatPriceImpact } from "@/lib/format";
 import TokenSelector from "./TokenSelector";
+import { saveSwap } from "@/lib/swapHistory";
 
 export default function SwapCard() {
   const { publicKey, signTransaction, connected } = useWallet();
@@ -45,6 +46,21 @@ export default function SwapCard() {
 
       if (result.status === "Success" || result.signature) {
         setTxResult({ txid: result.signature || "" });
+        // Save to local history
+        saveSwap({
+          signature: result.signature || "",
+          timestamp: Math.floor(Date.now() / 1000),
+          inputMint: store.inputToken.address,
+          inputSymbol: store.inputToken.symbol,
+          inputAmount: store.inputAmount,
+          inputLogoURI: store.inputToken.logoURI,
+          outputMint: store.outputToken.address,
+          outputSymbol: store.outputToken.symbol,
+          outputAmount: store.outputAmount,
+          outputLogoURI: store.outputToken.logoURI,
+          wallet: publicKey.toBase58(),
+          status: "success",
+        });
       } else {
         throw new Error(result.error || "Swap failed");
       }
